@@ -4,43 +4,42 @@ from collections import Counter
 import string
 import numpy as np
 
-def get_repeated_trigrams_frequencies(ciphertext):   # Restituisce un dizionario con le frequenze dei trigrammi ripetuti
-    n = 3
-    trigrams_frequencies = {}      
+def get_repeated_ngrams_frequencies(ciphertext, n):   # Restituisce un dizionario con le frequenze degli n-grammi ripetuti
+    ngrams_frequencies = {}      
     for i in range(len(ciphertext) - n + 1):
-        trigram = ciphertext[i : i+n]   # Seleziona un trigramma
-        trigrams_frequencies[trigram] = trigrams_frequencies.get(trigram, 0) + 1   # Aggiunge 1 alla frequenza
-    repeated_trigrams_frequencies = {}   # Crea un dizionario vuoto per i trigrammi filtrati
-    for trigram, freq in trigrams_frequencies.items():
-        if freq >= 2:
-            repeated_trigrams_frequencies[trigram] = freq
-    return repeated_trigrams_frequencies
+        ngram = ciphertext[i : i+n]   # Seleziona un n-gramma
+        ngrams_frequencies[ngram] = ngrams_frequencies.get(ngram, 0) + 1   # Aggiunge 1 alla frequenza
+    repeated_ngrams_frequencies = {}   # Crea un dizionario vuoto per gli n-grammi filtrati
+    for trigram, freq in ngrams_frequencies.items():
+        if freq > 1:   # Seleziona solo gli n-grammi ripetuti
+            repeated_ngrams_frequencies[trigram] = freq
+    return repeated_ngrams_frequencies
 
 
-def equals_trigrams_positions(ciphertext):   # Restituisce un dizionario che associa a ciascun trigramma ripetuto le posizioni dove compare nel testo
-    trigram_frequencies = get_repeated_trigrams_frequencies(ciphertext)
-    trigram_positions = {}   # Dizionario per memorizzare le posizioni dei trigrammi ripetuti
-    for trigram, freq in trigram_frequencies.items():
+def equals_ngrams_positions(ciphertext, n):   # Restituisce un dizionario che associa a ciascun n-gramma ripetuto le posizioni dove compare nel testo
+    ngram_frequencies = get_repeated_ngrams_frequencies(ciphertext, n)
+    ngram_positions = {}   # Dizionario per memorizzare le posizioni degli n-grammi ripetuti
+    for trigram, freq in ngram_frequencies.items():
         positions = []
         position = -1   # Inizia la ricerca dalla prima posizione possibile
         for _ in range(freq):
             position = ciphertext.find(trigram, position + 1)
             positions.append(position)
-        trigram_positions[trigram] = positions
-    return trigram_positions
+        ngram_positions[trigram] = positions
+    return ngram_positions
 
 
-def get_trigram_distances(ciphertext):   # Restituisce un dizionario con le distanze tra le posizioni di ciascuna occorrenza di ciascun trigramma
-    trigram_positions = equals_trigrams_positions(ciphertext)
-    trigram_distances = {}   # Dizionario per le distanze dei trigrammi
-    for trigram, positions in trigram_positions.items():   # Scorre il dizionario con le posizioni di ciascun trigramma
-        distances = [positions[i] - positions[i - 1] for i in range(1, len(positions))]   # Salva in un array le distanze tra le posizioni di un trigramma
-        trigram_distances[trigram] = distances   # Associa l'array delle distanze al proprio trigramma in un dizionario
-    return trigram_distances
+def get_ngram_distances(ciphertext, n):   # Restituisce un dizionario con le distanze tra le posizioni di ciascuna occorrenza di ciascun trigramma
+    ngram_positions = equals_ngrams_positions(ciphertext, n)
+    ngram_distances = {}   # Dizionario per le distanze degli n-grammi
+    for ngram, positions in ngram_positions.items():   # Scorre il dizionario con le posizioni di ciascun n-gramma
+        distances = [positions[i] - positions[i - 1] for i in range(1, len(positions))]   # Salva in un array le distanze tra le posizioni di un n-gramma
+        ngram_distances[ngram] = distances   # Associa l'array delle distanze al proprio n-gramma in un dizionario
+    return ngram_distances
 
 
 def get_trigram_gcd(trigram_distances):   # Calcola gli MCD tra le distanze
-    trigram_gcd = {}  # Dizionario per i MCD delle distanze dei trigrammi
+    trigram_gcd = {}   # Dizionario per i MCD delle distanze dei trigrammi
     for trigram, distances in trigram_distances.items():   # Calcola il MCD delle distanze per il trigramma corrente
         gcd = distances[0]
         for distance in distances:
@@ -138,13 +137,20 @@ if __name__ == '__main__':
         "FZFVZMUNFGEHUQOSFOFRYETDJULPJIBEAZLERPEFNJVXUFRAPQY"\
         "IYXKPCKUFGGQFEUDXNIIOETVVNERFQOJTOVOTRJYERJGMHYVHCL"\
         "GTUGULKLUPRJKSLMTDNJFSXEZTUKVHMIUFGNVQUHKLZGIOKHKXV"\
-        "ZKLXSAGUCYMILNEPULPJAGLXULXORZOEKRPOXE".lower()    
-    
-    #Test di Kasiski
-    repeated_trigram_frequencies = get_repeated_trigrams_frequencies(c)   # Frequenze dei trigrammi ripetuti
-    print("Dizionario delle frequenze dei trigrammi ripetuti: ", repeated_trigram_frequencies, "\n")
+        "ZKLXSAGUCYMILNEPULPJAGLXULXORZOEKRPOXE".lower() 
 
-    trigram_distances = get_trigram_distances(c)   # Distranze tra le posizioni dei trigrammi ripetuti
+    # Ripetizioni nel testo  
+    for n in range(2, 6):
+        repeated_ngram_frequencies = get_repeated_ngrams_frequencies(c, n)   # Frequenze degli n-grammi ripetuti
+        print("Dizionario delle frequenze dei ", n, "-grammi ripetuti: ", repeated_ngram_frequencies, "\n")   
+        ngram_distances = get_ngram_distances(c, n)   # Distranze tra le posizioni degli n-grammi ripetuti
+        print("Dizionario delle distanze tra le posizioni dei ", n, "-grammi: ", ngram_distances, "\n")
+
+    # Test di Kasiski    
+    repeated_trigram_frequencies = get_repeated_ngrams_frequencies(c, 3)   # Frequenze degli n-grammi ripetuti
+    print("Dizionario delle frequenze dei ", n, "-grammi ripetuti: ", repeated_ngram_frequencies, "\n")    
+
+    trigram_distances = get_ngram_distances(c, 3)   # Distranze tra le posizioni dei trigrammi ripetuti
     print("Dizionario delle distanze tra le posizioni dei trigrammi: ", trigram_distances, "\n")
 
     top_3_frequent = get_top_3_frequent_mcd(trigram_distances)   # Visualizzo i 3 MCD più frequenti: possibili lunghezze k
