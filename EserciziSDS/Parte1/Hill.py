@@ -6,8 +6,8 @@ import sympy
 def generate_square_matrix(matrix_size):   # Restituisce una matrice random di interi, invertibile modulo 26
     matrix = np.random.randint(0, 10, size=(matrix_size, matrix_size))    
     while is_matrix_invertible(matrix) == False:   # Se la matrice trovata non è invertibile mod 26 ne cerca una nuova
-        matrix = np.random.randint(0, 10, size=(matrix_size, matrix_size))
-    print("Matrice chiave k selezionata: ", matrix)   # Stampa la matrice trovata
+        matrix = np.random.randint(0, 26, size=(matrix_size, matrix_size))
+    print("Matrice chiave k selezionata: ", matrix, "\n")   # Stampa la matrice trovata
     return matrix   # Resttuisce la matrice quadrata invertibile mod26
 
 
@@ -16,7 +16,7 @@ def clean_text (text):
     return text_letters
 
 
-def prepare_message(plaintext, block_size):
+def prepare_message(plaintext, block_size):   # Ripulisce il testo e lo suddivide in blocchi di dimensione block_size
     plaintext = clean_text(plaintext)
     p_blocks = []  # Lista per i blocchi di numeri ASCII
     current_block = []  # Blocco corrente
@@ -26,7 +26,7 @@ def prepare_message(plaintext, block_size):
         if len(current_block) == block_size:
             p_blocks.append(np.array(current_block))  # Converte il blocco in un array Numpy e lo aggiunge a p_blocks
             current_block = []
-    return p_blocks
+    return p_blocks   # Lista di blocchi di dimensione block_size
 
 
 def encrypt(plaintext, k):
@@ -44,7 +44,6 @@ def is_matrix_invertible(matrix):
         raise ValueError("La matrice non è quadrata.")
     determinante = round(np.linalg.det(matrix)) % 26   # Determinante della matrice modulo 26    
     if gcd(determinante, 26) != 1:   # Verifica se la matrice è invertibile modulo 26
-        print("La matrice non è invertibile modulo 26.")
         invertible = False   # Se la matrice non è invertibile stampa un messaggio e restituisce falso
     return invertible
 
@@ -102,16 +101,16 @@ if __name__ == '__main__':
     # Encription
     plaintext = prepare_message(message, len(k))
     encripted_message = encrypt(plaintext,k)
-    print("Testo cifrato:", encripted_message)
+    print("Testo cifrato:", encripted_message, "\n")
 
     #Decription
     ciphertext = prepare_message(encripted_message, len(k))
     decripted_message = decrypt(ciphertext, k)
-    print("Testo decifrato:", decripted_message)
+    print("Testo decifrato:", decripted_message, "\n")
 
     # Attack
     k_found = attack(message, encripted_message, len(k))
-    print("Chiave trovata: ", k_found)
+    print("Chiave trovata: ", k_found, "\n")
 
     
 
